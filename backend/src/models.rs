@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-pub type SplitMode = String; // "equal", "percentage", or "solo"
+pub type SplitMode = String; // "equal", "percentage", "solo"
 
 #[derive(Deserialize)]
 pub struct BillSplitParticipant {
@@ -19,11 +19,16 @@ pub struct BillSplitState {
     pub participants: Vec<BillSplitParticipant>,
 }
 
+/// A single payment instruction
 #[derive(Serialize)]
-pub struct Payment { pub to: String, pub amount: f64 }
+pub struct Payment {
+    pub to: String,
+    pub amount: f64,
+}
 
+/// Renamed from `Result` to avoid conflict with `std::result::Result`
 #[derive(Serialize)]
-pub struct Result {
+pub struct SplitResult {
     pub name: String,
     pub paid: f64,
     pub share: f64,
