@@ -4,7 +4,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "electron:dev": "cross-env ELECTRON_START_URL=http://localhost:4200 electron .",
+    "serve": "concurrently \"npm:start\" \"npm run electron:dev\"",
+    "build": "ng build --prod",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
