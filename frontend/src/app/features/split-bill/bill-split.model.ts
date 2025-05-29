@@ -14,12 +14,15 @@ export interface BillSplitState {
   participants: BillSplitParticipant[];
 }
 
-export interface Payment { to: string; amount: number; }
+export interface Payment {
+  to: string;
+  amount: number;
+}
 
 export interface Result {
-  name:     string;
-  paid:     number;
-  share:    number;
-  balance:  number;
-  payments: Payment[];
+  name: string;
+  paid: number;
+  share: number;
+  balance: number; // positive = they should get back, negative = they owe
+  payments?: { to: string; amount: number }[];
 }

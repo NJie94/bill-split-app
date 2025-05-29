@@ -1,15 +1,9 @@
-// app.module.ts
-import { NgModule }      from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { ApiModule }     from './core/api.module';
-import { BillSplitModule } from './features/bill-split/bill-split.module';
+import { Component } from '@angular/core';
 
-@NgModule({
-  imports: [
-    BrowserModule,
-    ApiModule,
-    BillSplitModule
-  ],
-  bootstrap: [/* your root component */]
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
+  standalone: false,
 })
-export class AppModule {}
+export class AppComponent {}

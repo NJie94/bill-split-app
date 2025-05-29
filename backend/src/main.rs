@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use handlers::calculate_handler;
 
 // Embed the `frontend/dist` folder at compile time:
-static DIST_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/../frontend/dist/frontend");
+static DIST_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/../frontend/dist/");
 
 // Fallback to `index.html` for any GET (SPA routing)
 async fn spa_handler(req: HttpRequest) -> impl Responder {
