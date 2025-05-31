@@ -1,89 +1,30 @@
 /* ======================================================================
-   src/styles.scss  — GLOBAL ELECTRON + ANGULAR STYLES
+   src/styles.scss  — GLOBAL STYLES FOR ELECTRON + ANGULAR
    ====================================================================== */
 
-/*=======================================================================
-  1️⃣ BOX-SIZING RESET
-  ------------------------------------------------------------------------
-  Make every element use border-box by default (more predictable layouts).
-=======================================================================*/
+/* 1️⃣ BOX‐SIZING RESET
+   Ensure padding/borders are included in width/height. */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/*=======================================================================
-  2️⃣ HTML/BODY RESET & FULL‐HEIGHT LAYOUT
-  ------------------------------------------------------------------------
-  Ensure html, body and app-root fill 100% of the window so that
-  child elements (like .modal-backdrop) can cover the entire viewport.
-=======================================================================*/
+/* 2️⃣ HTML/BODY/APP-ROOT FULL‐HEIGHT LAYOUT
+   Stop window‐level scroll; we’ll scroll inside pages if needed. */
 html, body, app-root {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #f5f5f7;   /* Very light gray background behind modal */
+  background-color: #f5f5f7; /* Very light gray background */
   font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   color: #333333;
 }
-
-/* Prevent the main window from scrolling; any scroll should happen inside
-   the modal’s .modal-body instead. */
 body {
-  overflow: hidden;
+  overflow: hidden; /* Entire window won’t scroll—pages do internally */
 }
 
-/*=======================================================================
-  3️⃣ FULL‐SCREEN BACKDROP
-  ------------------------------------------------------------------------
-  Force .modal-backdrop to fill exactly 100% of width/height (no gray edges).
-=======================================================================*/
-.modal-backdrop {
-  position: fixed;  /* Always cover the entire window */
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.25);  /* Semi‐transparent black */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1100;
-
-  /* If the window is resized smaller, still cover it fully */
-  min-width: 100%;
-  min-height: 100%;
-}
-
-/*=======================================================================
-  4️⃣ FULL‐SCREEN MODAL “SHELL”
-  ------------------------------------------------------------------------
-  let component’s own .modal-content rules live inside here,
-  but we force the outer shell to fill the window so your modal can
-  grow/scale fluidly.
-
-  NOTE: not touching the CSS *inside* .modal-content,
-merely ensuring .modal-content itself can stretch to fill
-  the available space.
-=======================================================================*/
-.modal-content {
-  /* Display as a flex‐column so that your existing header/body/footer
-     inside can naturally flex/scroll. */
-  display: flex;
-  flex-direction: column;
-  width: 100vw;         /* 100% of viewport width */
-  height: 100vh;        /* 100% of viewport height */
-  margin: 0;
-  box-sizing: border-box;
-  overflow: hidden; /* Children will scroll inside if needed */
-}
-
-/*=======================================================================
-  5️⃣ INTERNAL SCROLLBARS (PURELY COSMETIC)
-  ------------------------------------------------------------------------
-  If any scrollbars appear inside .modal-body or elsewhere, style them lightly.
-=======================================================================*/
+/* 3️⃣ GLOBAL SCROLLBAR STYLING (optional) */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -96,23 +37,32 @@ merely ensuring .modal-content itself can stretch to fill
   background: transparent;
 }
 
-/*=======================================================================
-  6️⃣ OPTIONAL: BASE TYPOGRAPHY (You can omit or tweak as desired)
-  ------------------------------------------------------------------------
-  These are just global font/color resets so that app looks cohesive.
-=======================================================================*/
+/* 4️⃣ TYPOS & UTILITY CLASSES (optional but helpful) */
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
   font-weight: 600;
   color: #333333;
 }
-
 p, label, small {
   margin: 0;
   color: #333333;
 }
-
 small {
   color: #6b7280;
   font-size: 0.875rem;
+}
+
+/* 5️⃣ HELPERS FOR FULL‐SCREEN FLEX LAYOUT (used by app.component) */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.page-content {
+  flex: 1 1 auto;
+  overflow-y: auto; /* this scrolls if any page is taller than the window */
+  padding: 1rem;    /* optional page padding */
+  background-color: #ffffff; /* white “canvas” for pages */
 }
