@@ -1,6 +1,7 @@
 {
   "name": "bill-split-app",
   "version": "0.0.0",
+  "main": "src/electron.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -43,5 +44,22 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.7.2",
     "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "Nicholas.app.billsplit",
+    "files": [
+      "dist/bill-split-app/**/*",
+      "src/electron.js",
+      "src/preload.js",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "assets",
+      "output": "release"
+    },
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "assets/icon.ico"
+    }
   }
 }

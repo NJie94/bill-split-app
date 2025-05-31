@@ -1,3 +1,4 @@
+// src/electron.js
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
@@ -5,17 +6,29 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1024,
-    height: 768,
+    width: 1280,
+    height: 1280,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
     }
   });
 
-  // Load Angular's index.html from the built dist folder
-  const indexPath = path.join(__dirname, 'dist', 'bill-split-app', 'index.html');
-  mainWindow.loadFile(indexPath);
+  // __dirname === …/Split-Bill/src
+  // Go up one level (to project root), then into dist/bill-split-app/browser/index.html
+  const indexPath = path.join(
+    __dirname,          // …/Split-Bill/src
+    '..',               // …/Split-Bill
+    'dist',
+    'bill-split-app',
+    'browser',
+    'index.html'
+  );
+
+  console.log('✏️  Electron is loading:', indexPath);
+  mainWindow.loadFile(indexPath).catch(err => {
+    console.error('❌ Failed to load index.html:', err);
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -28,8 +41,7 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-// Your existing IPC stub remains if you still want local save:
 ipcMain.handle('save-state', async (_, { key, data }) => {
-  // e.g. write `data` to a file in app.getPath('userData'), if desired
+  // (Optional) Write data to disk under app.getPath('userData')
   return true;
 });
