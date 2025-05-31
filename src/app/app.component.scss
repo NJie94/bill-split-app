@@ -1,0 +1,11 @@
+/* ======================================================================
+   src/app/app.component.scss  — ensure the app root is always white
+   ====================================================================== */
+
+/* Force <app-root> to have a white background so that if any tiny sliver
+   of container shows (when modal is animating in/out), it is white. */
+:host {
+  display: block;
+  height: 100%;
+  background-color: #ffffff;
+}
