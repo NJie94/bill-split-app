@@ -40,22 +40,6 @@ $gutter: 2rem;
     font-size: 1rem;
     color: #555;
   }
-  /* Keep your close button in the top right if you want */
-  .close-btn {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #555;
-    cursor: pointer;
-    transition: color 0.2s;
-
-    &:hover {
-      color: #000;
-    }
-  }
 }
 
 /* ==========================================================================
