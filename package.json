@@ -1,18 +1,23 @@
 {
   "name": "bill-split-app",
   "version": "0.0.0",
-  "main": "src/electron.js",
+  "main": "electron.js",
+  "author": "Nicholas Hi Kai Jie",
   "scripts": {
+    "clean-dist": "rimraf release-builds",
+    "pre-dist-win": "npm run clean-dist",
     "ng": "ng",
     "start": "ng serve",
     "postinstall": "electron-builder install-app-deps",
-    "electron-dev": "cross-env ELECTRON_START_URL=http://localhost:4200 electron .",
-    "electron-start": "npm run build-all && electron .",
-    "serve": "concurrently \"npm:start\" \"npm run electron:dev\"",
+    "electron-dev": "npm run build && electron.cmd .",
+    "electron-prod": "npm run build && electron.cmd .",
+    "electron-start": "npm run build-all && electron.cmd .",
+    "serve": "concurrently \"npm:start\" \"npm run electron-dev\"",
     "build-all": "npm run build",
     "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "dist-win": "npm run build && electron-builder --win"
   },
   "private": true,
   "dependencies": {
@@ -42,24 +47,40 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.7.2",
     "wait-on": "^8.0.3"
   },
   "build": {
-    "appId": "Nicholas.app.billsplit",
+    "appId": "Nicholas.app.billsplitapp",
+    "productName": "BillSplitApp",
+    "directories": {
+      "output": "release-builds",
+      "buildResources": "assets"
+    },
     "files": [
-      "dist/bill-split-app/**/*",
-      "src/electron.js",
-      "src/preload.js",
+      "dist/bill-split-app/browser/**/*",
+      "electron.js",
+      "preload.js",
       "package.json"
     ],
-    "directories": {
-      "buildResources": "assets",
-      "output": "release"
-    },
     "win": {
-      "target": ["nsis", "portable"],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-setup-${arch}.exe",
       "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true
     }
   }
 }
