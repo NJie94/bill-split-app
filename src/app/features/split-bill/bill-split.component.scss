@@ -1,74 +1,88 @@
+// bill-split.component.scss
+
 @use 'sass:color';
 
 /// COLORS & VARIABLES
-$accent: #4c51bf;
-$card-bg: #fff;
-$card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-$gutter: 2rem;
+$accent:       #4c51bf;
+$card-bg:      #fff;
+$card-shadow:  0 2px 8px rgba(0, 0, 0, 0.1);
+$gutter:       2rem;
 
-///
-/// turn this into a “full‐page” flex container instead of a fixed modal.
-///
+/// 1) The host itself is 100vh so we never scroll the window—only modal-body scrolls
 :host {
-  display: flex;
+  display:        flex;
   flex-direction: column;
-  height: 100%;
-  width: 100%;
+  height:         100vh;   // fill the viewport
+  width:          100%;
   background-color: $card-bg;
-  box-sizing: border-box;
-  overflow: hidden;
+  box-sizing:     border-box;
 }
 
-/* ==========================================================================
-   HEADER (formerly .modal-header)
-   ========================================================================== */
+/// 2) Ensure the backdrop + content wrappers also fill 100%
+.modal-backdrop {
+  display:        flex;
+  flex-direction: column;
+  height:         100%;   // fill the host (100vh)
+}
+
+.modal-content {
+  display:        flex;
+  flex-direction: column;
+  flex:           1 1 auto;  // fill the backdrop
+  height:         100%;
+}
+
+/// 3) HEADER (always pinned at top)
 .modal-header {
-  flex: 0 0 auto;  /* No growing/shrinking, just content height */
-  text-align: center;
-  padding: 1.5rem 1rem 0.5rem;
-  border-bottom: 1px solid #e5e7eb; /* subtle divider */
-  background: $card-bg;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  flex:            0 0 auto; // do not grow or shrink
+  text-align:      center;
+  padding:         1.5rem 1rem 0.5rem;
+  border-bottom:   1px solid #e5e7eb;
+  background:      $card-bg;
+  box-shadow:      0 1px 3px rgba(0, 0, 0, 0.06);
 
   h2 {
-    margin: 0;
-    font-size: 1.8rem;
-    color: #222;
+    margin:       0;
+    font-size:    1.8rem;
+    color:        #222;
   }
   .subtitle {
-    margin-top: 0.5rem;
-    font-size: 1rem;
-    color: #555;
+    margin-top:   0.5rem;
+    font-size:    1rem;
+    color:        #555;
   }
 }
 
-/* ==========================================================================
-   BODY (formerly .modal-body) – scrollable content area
-   ========================================================================== */
+/// 4) BODY (everything below header scrolls here in one single region)
 .modal-body {
-  flex: 1 1 auto;         /* Grow to fill remaining height */
-  display: flex;
-  flex-direction: column;
-  padding: $gutter;       /* Internal padding around entire form */
-  overflow-y: auto;       /* If content is too tall, scroll here */
-  box-sizing: border-box;
-  background: $card-bg;
+  flex:            1 1 auto;  // fill remaining height under header
+  display:         flex;
+  flex-direction:  column;
+  padding:         $gutter;
+  overflow-y:      auto;      // ← scroll here if form+results exceed available height
+  background:      $card-bg;
+  box-sizing:      border-box;
 
-  /* When scrollbars appear, scroll only inside here */
+  // optional custom scrollbar styling
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
 }
 
-/* ==========================================================================
-   SPLIT MODE CONTROLS
-   ========================================================================== */
+/// 5) Split‐Mode Controls
 .split-mode {
-  display: flex;
-  gap: 2rem;
-  margin: 1rem 0;
+  display:       flex;
+  gap:           2rem;
+  margin:        1rem 0;
 
   label {
-    font-size: 1rem;
-    color: #333;
-    cursor: pointer;
+    font-size:   1rem;
+    color:       #333;
+    cursor:      pointer;
 
     input {
       margin-right: 0.5rem;
@@ -76,41 +90,39 @@ $gutter: 2rem;
   }
 }
 
-/* ==========================================================================
-   TOP PANELS (TOTAL AMOUNT + NUM PEOPLE)
-   ========================================================================== */
+/// 6) TOP PANELS: Total Amount + Number of People
 .controls-panel {
-  display: grid;
+  display:        grid;
   grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  gap:            1.5rem;
+  margin-bottom:  1.5rem;
 
   .control {
-    display: flex;
+    display:       flex;
     flex-direction: column;
 
     label {
       font-weight: 500;
       margin-bottom: 0.25rem;
-      color: #333;
+      color:       #333;
     }
     .helper {
-      margin-top: 0.25rem;
-      font-size: 0.85rem;
-      color: #888;
+      margin-top:  0.25rem;
+      font-size:   0.85rem;
+      color:       #888;
     }
     input {
-      font-size: 1rem;
-      padding: 0.6rem;
+      font-size:   1rem;
+      padding:     0.6rem;
       border-radius: 6px;
-      outline: none;
-      border: 1px solid #ccc;
-      transition: border-color 0.2s;
+      outline:     none;
+      border:      1px solid #ccc;
+      transition:  border-color 0.2s;
 
       &.read-only {
         background: #f5f5f5;
-        border: 1px solid #ccc;
-        cursor: not-allowed;
+        border:     1px solid #ccc;
+        cursor:     not-allowed;
       }
       &:not(.read-only):focus {
         border-color: $accent;
@@ -119,16 +131,12 @@ $gutter: 2rem;
   }
 }
 
-/* ==========================================================================
-   PARTICIPANTS LIST (scrollable if too many)
-   ========================================================================== */
+/// 7) PARTICIPANTS LIST (scrollable if many rows but still within modal-body)
 .participants-scroll {
-  flex: 1 1 auto;       /* Grow inside .modal-body */
-  overflow-y: auto;
-  margin-bottom: 1rem;
-  padding-right: 1rem;
-  scrollbar-width: auto;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  flex:            1 1 auto;  // can grow/shrink beneath .modal-body
+  overflow-y:      auto;       // scroll here if participant cards exceed height
+  margin-bottom:   1rem;
+  padding-right:   1rem;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -139,133 +147,128 @@ $gutter: 2rem;
   }
 }
 
-/* ==========================================================================
-   INDIVIDUAL PARTICIPANT CARD 
-   ========================================================================== */
+/// 8) INDIVIDUAL PARTICIPANT CARD
 .participant-row {
-  display: grid;
-  gap: 1rem;
-  align-items: start;
-  margin-bottom: 1.5rem;
+  display:        grid;
+  gap:            1rem;
+  align-items:    start;
+  margin-bottom:  1.5rem;
 
-  /* Two different grid layouts depending on presence of “options” */
+  /* two grid layouts depending on presence of “options” */
   &.has-option {
     grid-template-columns: 3fr 1.5fr 1fr minmax(120px, auto);
   }
-
   &:not(.has-option) {
     grid-template-columns: 3fr 1.5fr 1fr;
   }
 
-  background: $card-bg;
-  border-radius: 8px;
-  box-shadow: $card-shadow;
-  padding: 1rem $gutter;
-  box-sizing: border-box;
-  border-left: 4px solid transparent;
-  transition: border-left-color 0.2s, box-shadow 0.2s;
+  background:     $card-bg;
+  border-radius:  8px;
+  box-shadow:     $card-shadow;
+  padding:        1rem $gutter;
+  box-sizing:     border-box;
+  border-left:    4px solid transparent;
+  transition:     border-left-color 0.2s, box-shadow 0.2s;
 
   &:hover,
   &:focus-within {
     border-left-color: $accent;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    box-shadow:        0 4px 12px rgba(0, 0, 0, 0.12);
   }
 
   .percent-error {
-    grid-column: 1 / -1;
-    color: #dc2626;
-    font-size: 0.9rem;
-    margin: 0.5rem 0;
+    grid-column:   1 / -1;
+    color:         #dc2626;
+    font-size:     0.9rem;
+    margin:        0.5rem 0;
   }
 
   .subfield {
-    display: flex;
+    display:       flex;
     flex-direction: column;
-    width: 100%;
+    width:         100%;
 
     label {
-      font-size: 0.85rem;
-      color: #444;
+      font-size:   0.85rem;
+      color:       #444;
       margin-bottom: 0.25rem;
     }
     input {
-      border: 1px solid #ddd;
+      border:      1px solid #ddd;
       border-radius: 4px;
-      padding: 0.5rem;
-      font-size: 0.95rem;
+      padding:     0.5rem;
+      font-size:   0.95rem;
     }
     .share-value {
-      background: #f5f5f5;
-      border: 1px solid #ddd;
+      background:  #f5f5f5;
+      border:      1px solid #ddd;
       border-radius: 4px;
-      padding: 0.4rem 0.6rem;
-      font-size: 0.95rem;
-      color: #333;
-      display: flex;
+      padding:     0.4rem 0.6rem;
+      font-size:   0.95rem;
+      color:       #333;
+      display:     flex;
       align-items: center;
-      min-height: 2.5rem;
-      box-sizing: border-box;
-      width: 100%;
+      min-height:  2.5rem;
+      box-sizing:  border-box;
+      width:       100%;
     }
   }
 
   .option-field {
-    display: none;
+    display:     none;
   }
   &.has-option .option-field {
-    display: flex;
+    display:       flex;
     flex-direction: column;
     justify-content: center;
 
     label {
-      font-size: 0.85rem;
-      color: #444;
+      font-size:   0.85rem;
+      color:       #444;
       margin-bottom: 0.25rem;
     }
     input[type='checkbox'],
     input[type='number'] {
-      height: 2.5rem;
-      box-sizing: border-box;
-      padding: 0 0.75rem;
-      font-size: 0.95rem;
+      height:      2.5rem;
+      box-sizing:  border-box;
+      padding:     0 0.75rem;
+      font-size:   0.95rem;
     }
   }
 }
 
-/* ==========================================================================
-   ITEMS CARD
-   ========================================================================== */
+/// 9) ITEMS CARD (per‐participant)
 .items-card {
-  grid-column: 1 / -1;
-  background: #fdfdfd;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  margin: 1rem 0;
-  padding: 1rem $gutter;
-  box-shadow: $card-shadow;
-  box-sizing: border-box;
+  grid-column:    1 / -1;
+  background:     #fdfdfd;
+  border:         1px solid #e2e8f0;
+  border-radius:  8px;
+  margin:         1rem 0;
+  padding:        1rem $gutter;
+  box-shadow:     $card-shadow;
+  box-sizing:     border-box;
 
   .items-header {
-    display: flex;
-    align-items: center;
+    display:        flex;
+    align-items:    center;
     justify-content: space-between;
-    margin-bottom: 0.75rem;
+    margin-bottom:  0.75rem;
 
     h4 {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #2d3748;
+      margin:       0;
+      font-size:    1rem;
+      font-weight:  600;
+      color:        #2d3748;
     }
     .btn-add-item {
-      background: $accent;
-      color: #fff;
-      border: none;
+      background:   $accent;
+      color:        #fff;
+      border:       none;
       border-radius: 4px;
-      padding: 0.3rem 0.6rem;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: background 0.2s;
+      padding:      0.3rem 0.6rem;
+      font-size:    0.85rem;
+      cursor:       pointer;
+      transition:   background 0.2s;
 
       &:hover {
         background: color.adjust($accent, $lightness: -10%);
@@ -274,142 +277,139 @@ $gutter: 2rem;
   }
 
   .items-table {
-    width: 100%;
+    width:          100%;
     border-collapse: separate;
-    border-spacing: 0 0.5rem;
+    border-spacing:  0 0.5rem;
 
     thead th {
-      text-align: left;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #4a5568;
+      text-align:   left;
+      font-size:    0.85rem;
+      font-weight:  500;
+      color:        #4a5568;
       padding-bottom: 0.25rem;
       border-bottom: 2px solid #edf2f7;
     }
 
     tbody tr {
-      background: #fff;
+      background:   #fff;
       border-radius: 4px;
     }
 
     td,
     th {
-      padding: 0.5rem;
+      padding:      0.5rem;
     }
 
     .amount-col {
-      width: 120px;
+      width:        120px;
     }
     .actions-col {
-      width: 32px;
-      text-align: center;
+      width:        32px;
+      text-align:   center;
     }
 
     input {
-      width: 95%;
-      padding: 0.5rem 0.5rem;
-      font-size: 0.9rem;
-      border: 1px solid #cbd5e0;
+      width:        95%;
+      padding:      0.5rem 0.5rem;
+      font-size:    0.9rem;
+      border:       1px solid #cbd5e0;
       border-radius: 4px;
-      transition: border-color 0.2s;
+      transition:   border-color 0.2s;
 
       &:focus {
-        outline: none;
+        outline:    none;
         border-color: #63b3ed;
       }
     }
 
     .btn-remove-item {
-      background: transparent;
-      border: none;
-      color: #e53e3e;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: color 0.2s;
+      background:   transparent;
+      border:       none;
+      color:        #e53e3e;
+      font-size:    1.1rem;
+      cursor:       pointer;
+      transition:   color 0.2s;
 
       &:hover {
-        color: color.adjust(#e53e3e, $lightness: -15%);
+        color:      color.adjust(#e53e3e, $lightness: -15%);
       }
     }
   }
 }
 
-/* ==========================================================================
-   CALCULATE BUTTON
-   ========================================================================== */
+/// 10) CALCULATE BUTTON (bottom of form)
 .btn.primary {
-  align-self: flex-end;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 6px;
-  background: $accent;
-  color: #fff;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.2s;
-  margin-bottom: $gutter;
+  align-self:     flex-end;
+  padding:        0.75rem 1.5rem;
+  border:         none;
+  border-radius:  6px;
+  background:     $accent;
+  color:          #fff;
+  cursor:         pointer;
+  font-size:      1rem;
+  transition:     background 0.2s;
+  margin-bottom:  $gutter;
 
   &:hover:not(:disabled) {
-    background: color.adjust($accent, $lightness: -15%);
+    background:   color.adjust($accent, $lightness: -15%);
   }
   &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    opacity:      0.6;
+    cursor:       not-allowed;
   }
 }
 
-/* ==========================================================================
-   RESULTS TABLE
-   ========================================================================== */
+/// 11) RESULTS TABLE (no longer scrollable on its own—just part of modal-body)
 .output-section {
-  flex: 1 1 auto;      /* grow to fill .modal-body if results appear */
-  overflow-y: auto;
-  margin-top: 1.5rem;
+  /* Remove any overflow-y here so that results “push” modal-body */
+  margin-top:     1.5rem;
+  /* remove flex:1 and overflow so it’s just a normal block */
 }
+
 .results-table {
-  width: 100%;
+  width:          100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout:   fixed;
 
   th,
   td {
-    padding: 0.75rem 0.5rem;
-    text-align: left;
+    padding:      0.75rem 0.5rem;
+    text-align:   left;
     vertical-align: middle;
   }
   thead th {
     border-bottom: 2px solid #ddd;
-    font-weight: 600;
-    color: #333;
+    font-weight:   600;
+    color:         #333;
   }
   tbody tr.alt {
-    background: #fafafa;
+    background:   #fafafa;
   }
   td.positive {
-    color: #16a34a;
+    color:        #16a34a;
   }
   td.negative {
-    color: #dc2626;
+    color:        #dc2626;
   }
 }
 
-/* ==========================================================================
-   RESPONSIVE BREAKPOINT
-   ========================================================================== */
+/* =====================================================================
+   Responsive (≤600px wide)
+   ===================================================================== */
 @media (max-width: 600px) {
   .controls-panel {
     grid-template-columns: 1fr;
   }
   .participant-row {
     grid-template-columns: 1fr !important;
-    grid-auto-rows: auto;
+    grid-auto-rows:     auto;
     > * {
-      width: 100%;
+      width:            100%;
     }
-    padding: 0 $gutter;
+    padding:           0 $gutter;
 
     &.missing-item {
-      border-left: 4px solid #e53e3e; /* red if missing item */
+      border-left-color: #e53e3e; /* red if missing item */
     }
   }
 }

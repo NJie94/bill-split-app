@@ -1,25 +1,41 @@
+<!-- bill-split.component.html -->
+
 <div class="modal-backdrop">
   <div class="modal-content">
-    <!-- HEADER -->
+
+    <!-- HEADER (always pinned at top of 100vh) -->
     <header class="modal-header">
       <h2>Split the Bill</h2>
       <p class="subtitle">
         We'll sum what everyone's paid, then split however you choose.
-        Remove unuse items to Calculate Balances
+        Remove unused items to Calculate Balances
       </p>
     </header>
 
-    <!-- BODY -->
+    <!-- BODY (everything below header scrolls in one single region) -->
     <div class="modal-body">
+
+      <!-- ───────────────────────────────────────────
+           1) THE FORM: split-mode → totals → participants → Calculate
+           ─────────────────────────────────────────── -->
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="split-form">
-        <!-- Split-Mode -->
+        <!-- Split-Mode Radio Buttons -->
         <div class="split-mode">
-          <label><input type="radio" formControlName="splitMode" value="equal" /> Equal</label>
-          <label><input type="radio" formControlName="splitMode" value="percentage" /> By %</label>
-          <label><input type="radio" formControlName="splitMode" value="solo" /> Solo</label>
+          <label>
+            <input type="radio" formControlName="splitMode" value="equal" />
+            Equal
+          </label>
+          <label>
+            <input type="radio" formControlName="splitMode" value="percentage" />
+            By %
+          </label>
+          <label>
+            <input type="radio" formControlName="splitMode" value="solo" />
+            Solo
+          </label>
         </div>
 
-        <!-- Totals -->
+        <!-- Totals Panel: Total Amount + Number of People -->
         <div class="controls-panel">
           <div class="control">
             <label for="totalAmount">Total Amount</label>
@@ -45,29 +61,31 @@
           </div>
         </div>
 
-        <!-- PARTICIPANTS -->
+        <!-- PARTICIPANTS (scrollable if there are many, inside modal-body) -->
         <div formArrayName="participants" class="participants-scroll">
           <div
             *ngFor="let ctrl of participants.controls; let i = index"
             [formGroupName]="i"
             class="participant-row"
             [class.has-option]="
-              form.value.splitMode === 'percentage' || form.value.splitMode === 'solo'
+              form.value.splitMode === 'percentage'
+              || form.value.splitMode === 'solo'
             "
           >
-            <!-- Percent error -->
+            <!-- Percent‐sum Error (only in % mode) -->
             <ng-container
               *ngIf="
-                form.value.splitMode === 'percentage' &&
-                form.get('participants')!.errors?.['percentSum']
+                form.value.splitMode === 'percentage'
+                && form.get('participants')!.errors?.['percentSum']
               "
             >
               <div class="percent-error">
                 Total must equal 100% (current =
                 {{
-                  form.get("participants")!.errors!['percentSum'].actual
+                  form.get('participants')!.errors!['percentSum'].actual
                   | number : "1.0-2"
-                }}%).
+                }}%
+                ).
               </div>
             </ng-container>
 
@@ -78,7 +96,8 @@
                 id="name-{{ i }}"
                 type="text"
                 formControlName="name"
-                placeholder="Nicholas"
+                placeholder="Alice"
+                required
               />
             </div>
 
@@ -95,7 +114,7 @@
               />
             </div>
 
-            <!-- Share -->
+            <!-- Share (calculated) -->
             <div class="subfield">
               <label>Share</label>
               <div class="share-value">
@@ -103,7 +122,7 @@
               </div>
             </div>
 
-            <!-- Option: % or Solo -->
+            <!-- Option Field: % Split or Solo -->
             <div class="subfield option-field">
               <ng-container *ngIf="form.value.splitMode === 'percentage'">
                 <label for="pct-{{ i }}">% Split</label>
@@ -126,7 +145,7 @@
               </ng-container>
             </div>
 
-            <!-- Items Card -->
+            <!-- ITEMS CARD (per‐participant) -->
             <div class="items-card" formArrayName="items">
               <div class="items-header">
                 <h4>Items</h4>
@@ -158,6 +177,7 @@
                       <input
                         formControlName="description"
                         placeholder="e.g. Pizza"
+                        required
                       />
                     </td>
                     <td class="amount-col">
@@ -184,18 +204,17 @@
               </table>
             </div>
             <!-- end items-card -->
-
           </div>
         </div>
 
-        <!-- Calculate -->
+        <!-- CALCULATE BUTTON (bottom of form) -->
         <button
           type="submit"
           class="btn primary"
           [disabled]="!canCalculate"
           [title]="
             splitMode === 'percentage' && !allHaveItems
-              ? 'Remove Item from user if there is no input'
+              ? 'Remove unused items so percentages sum to 100%'
               : ''
           "
         >
@@ -203,7 +222,9 @@
         </button>
       </form>
 
-      <!-- RESULTS -->
+      <!-- ───────────────────────────────────────────
+           2) THE RESULTS TABLE (now part of modal-body’s flow)
+           ─────────────────────────────────────────── -->
       <section class="output-section" *ngIf="results.length">
         <h3 class="section-header">Results</h3>
         <table class="results-table">
@@ -217,10 +238,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr
-              *ngFor="let r of results; let idx = index"
-              [class.alt]="idx % 2 === 1"
-            >
+            <tr *ngFor="let r of results; let idx = index" [class.alt]="idx % 2 === 1">
               <td>{{ r.name }}</td>
               <td>{{ r.paid | currency }}</td>
               <td>{{ r.share | currency }}</td>
@@ -242,5 +260,8 @@
         </table>
       </section>
     </div>
+    <!-- end .modal-body -->
+
   </div>
+  <!-- end .modal-content -->
 </div>
