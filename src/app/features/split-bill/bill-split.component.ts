@@ -18,8 +18,10 @@ import {
 } from '@angular/forms';
 
 import {
+  BillSplitItem,
   BillSplitStateService,
-  SplitMode
+  SplitMode,
+  BillSplitParticipant,
 } from './bill-split-state.service';
 import {
   BillSplitState,
@@ -66,51 +68,73 @@ export class SplitBillComponent implements OnInit, OnDestroy {
     this.form = this.fb.group({
       splitMode: ['equal' as SplitMode, Validators.required],
       numPeople: [2, [Validators.required, Validators.min(1)]],
-      // start with no validator on participants
       participants: this.fb.array([])
     });
 
-    // whenever splitMode changes:
+    // Whenever splitMode changes, add/remove the percentage‐sum validator and recalc shares.
     this.form.get('splitMode')!.valueChanges.subscribe((mode: SplitMode) => {
       const arr = this.participants;
       if (mode === 'percentage') {
-        // add the percent-sum validator
         arr.setValidators(this.percentageSumValidator());
       } else {
-        // remove that validator
         arr.clearValidators();
       }
-      // re‐run validation (but don’t re‐emit valueChanges)
       arr.updateValueAndValidity({ emitEvent: false });
-      // keep shares in sync
       this.calculateShares();
     });
 
-    // whenever numPeople changes, rebuild rows & recalc shares
-    this.form.get('numPeople')!
-      .valueChanges.subscribe(n => this.adjustParticipants(n));
+    // Whenever numPeople changes, rebuild that many participant rows.
+    this.form.get('numPeople')!.valueChanges.subscribe(n => this.adjustParticipants(n));
 
-    // initialize with the default count
+    // Initialize with whatever default count is currently in the form (e.g. 2).
     this.adjustParticipants(this.form.value.numPeople);
 
-    // restore saved state...
+    // Restore saved state (if any).
     const saved = this.stateSvc.load();
     if (saved) {
+      // Patch splitMode & numPeople.  Patching numPeople will trigger adjustParticipants(saved.numPeople)
+      // because of the valueChanges subscription above.
       this.form.patchValue({
         splitMode: saved.splitMode,
         numPeople: saved.numPeople
       });
+
+      // At this point, we’ve already called adjustParticipants(saved.numPeople), so
+      // “this.participants” now has exactly saved.numPeople FormGroups in it.
       saved.participants.forEach((p, i) => {
         const ctrl = this.participants.at(i);
+
+        // --- REBUILD ITEMS ARRAY ---
+        // Grab the items FormArray, clear out whatever “one blank item” was there,
+        //     then push one FormGroup per saved item.
+        const itemArr = this.items(ctrl);
+        itemArr.clear();
+        p.items.forEach(savedItem => {
+          const fg = this.newItemGroup();
+          fg.patchValue({
+            description: savedItem.description,
+            amount:      savedItem.amount
+          });
+          itemArr.push(fg);
+        });
+        // Recompute "paid" from those rebuilt items:
+        this.syncItemsToPaid(ctrl);
+
+        // --- PATCH THE OTHER FIELDS ---
+        // If there was a saved name, percentage, isPayer, patch those too:
         ctrl.patchValue({
           name:       p.name,
-          paid:       p.paid,
+          // If percentage was undefined in saved, keep whatever default percentage was
           percentage: p.percentage ?? ctrl.value.percentage,
           isPayer:    p.isPayer ?? false
         });
       });
+
+      //Once everything is patched, recalc shares one more time:
+      this.calculateShares();
     }
   }
+
 
   private adjustParticipants(count: number) {
     const arr = this.participants;
@@ -219,7 +243,6 @@ export class SplitBillComponent implements OnInit, OnDestroy {
         // Default to “Person 1”, “Person 2”, etc.
         ctrl.get('name')!.setValue(`Person ${idx + 1}`, { emitEvent: false });
       }
-      // If you also want a default item description whenever it’s empty:
       const itemArr = this.items(ctrl);
       itemArr.controls.forEach((itemCtrl, itemIdx) => {
         const desc = (itemCtrl.get('description')!.value || '').trim();
@@ -255,6 +278,8 @@ export class SplitBillComponent implements OnInit, OnDestroy {
       ...r,
       payments: instructions[r.name] || [],
     }));
+
+    this.saveState();
   }
 
   private computePayments(results: Result[]): Record<string, Payment[]> {
@@ -312,15 +337,25 @@ export class SplitBillComponent implements OnInit, OnDestroy {
   }
 
   private saveState() {
-    const state = {
+    const state: BillSplitState = {
       splitMode: this.form.value.splitMode,
       numPeople: this.form.value.numPeople,
-      participants: this.participants.controls.map(c => ({
-        name: c.get('name')!.value,
-        paid: +c.get('paid')!.value,
-        percentage: +c.get('percentage')!.value,
-        isPayer: c.get('isPayer')!.value
-      }))
+      participants: this.participants.controls.map(c => {
+        // Extract all items from the FormArray
+        const itemsFA = c.get('items') as FormArray;
+        const items: BillSplitItem[] = itemsFA.controls.map(itemCtrl => ({
+          description: itemCtrl.get('description')!.value,
+          amount:      +itemCtrl.get('amount')!.value
+        }));
+
+        return {
+          name:       c.get('name')!.value,
+          paid:       +c.get('paid')!.value,
+          percentage: +c.get('percentage')!.value,
+          isPayer:    c.get('isPayer')!.value,
+          items : items
+        };
+      })
     };
     this.stateSvc.save(state);
   }

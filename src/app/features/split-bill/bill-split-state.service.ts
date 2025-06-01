@@ -2,18 +2,25 @@
 import { Injectable } from '@angular/core';
 
 export type SplitMode = 'equal' | 'percentage' | 'solo';
+
+export interface BillSplitItem {
+  description: string;
+  amount: number;
+}
+
 export interface BillSplitParticipant {
-    name: string;
-    paid: number;
-    percentage?: number;
-    isPayer?: boolean;
+  name: string;
+  paid: number;
+  percentage?: number;
+  isPayer?: boolean;
+  items: BillSplitItem[];
 }
 
 export interface BillSplitState {
-    splitMode: SplitMode;
-    numPeople: number;
-    participants: BillSplitParticipant[];
-  }
+  splitMode: SplitMode;
+  numPeople: number;
+  participants: BillSplitParticipant[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class BillSplitStateService {
@@ -27,7 +34,7 @@ export class BillSplitStateService {
 
   load(): BillSplitState | null {
     const raw = localStorage.getItem(this.key);
-    return raw ? JSON.parse(raw) as BillSplitState : null;
+    return raw ? (JSON.parse(raw) as BillSplitState) : null;
   }
 
   clear() {
