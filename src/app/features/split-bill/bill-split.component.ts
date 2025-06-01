@@ -117,12 +117,11 @@ export class SplitBillComponent implements OnInit, OnDestroy {
     while (arr.length < count) {
       const eachPct = 100 / count;
       const ctrl = this.fb.group({
-        name:       ['', Validators.required],
+        name:       [''],              
         paid:       [0, [Validators.required, Validators.min(0)]],
         percentage: [eachPct, [Validators.min(0), Validators.max(100)]],
         isPayer:    [false],
         share:      [{ value: 0, disabled: true }],
-        // ← initialize with one blank item so there's always something to type into:
         items:      this.fb.array([ this.newItemGroup() ])
       });
 
@@ -140,8 +139,9 @@ export class SplitBillComponent implements OnInit, OnDestroy {
   /** helper to build a new item row */
   private newItemGroup(): FormGroup {
     return this.fb.group({
-      description: [''],
-      amount: [0, [Validators.required, Validators.min(0)]]
+      // no Validators.required on description: blanks are okay
+      description: [''],                
+      amount:      [0, [Validators.required, Validators.min(0)]]
     });
   }
 
@@ -212,6 +212,26 @@ export class SplitBillComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
+    // Even if the user left some names blank, we now fill in defaults:
+    this.participants.controls.forEach((ctrl, idx) => {
+      const rawName = (ctrl.get('name')!.value || '').trim();
+      if (!rawName) {
+        // Default to “Person 1”, “Person 2”, etc.
+        ctrl.get('name')!.setValue(`Person ${idx + 1}`, { emitEvent: false });
+      }
+      // If you also want a default item description whenever it’s empty:
+      const itemArr = this.items(ctrl);
+      itemArr.controls.forEach((itemCtrl, itemIdx) => {
+        const desc = (itemCtrl.get('description')!.value || '').trim();
+        if (!desc) {
+          itemCtrl.get('description')!.setValue(`Item ${itemIdx + 1}`, { emitEvent: false });
+        }
+        // Amount is already default=0 in newItemGroup(), so no need to patch it here.
+      });
+    });
+
+    // Now re‐run validation.  (We removed Validators.required on `name`, 
+    // so as soon as amounts are valid, the form will be valid.)
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -227,7 +247,7 @@ export class SplitBillComponent implements OnInit, OnDestroy {
       return { name, paid, share, balance };
     });
 
-    // compute bi-partite matching of debtors -> creditors
+    // compute bi-partite matching of debtors → creditors
     const instructions = this.computePayments(tmp);
 
     // merge into results
@@ -275,7 +295,7 @@ export class SplitBillComponent implements OnInit, OnDestroy {
         // ← use "percentage", not "percent"
         .map(c => +c.get('percentage')!.value || 0)
         .reduce((a, b) => a + b, 0);
-  
+
       return Math.abs(sum - 100) < 0.01
         ? null
         : { percentSum: { actual: sum } };
