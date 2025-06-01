@@ -35,7 +35,6 @@ import { BillSplitApiService } from './bill-split-api.service';
   standalone: false
 })
 export class SplitBillComponent implements OnInit, OnDestroy {
-  @Output() close = new EventEmitter<void>();
 
   form!: FormGroup;
   results: Result[] = [];
@@ -281,11 +280,6 @@ export class SplitBillComponent implements OnInit, OnDestroy {
         ? null
         : { percentSum: { actual: sum } };
     };
-  }
-
-  onClose() {
-    this.saveState();
-    this.close.emit();
   }
 
   ngOnDestroy() {

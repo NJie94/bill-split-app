@@ -10,7 +10,8 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1920,
     height: 1080,
-    show: false, // we’ll show after load (or force show on error)
+    show: false,
+    autoHideMenuBar: true, 
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
